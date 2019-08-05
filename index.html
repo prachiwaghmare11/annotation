@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Traffic Annotations</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+	<link type="text/css" rel="stylesheet" href="css/annotorious.css" />
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="annotorious.min.js"></script>
+    <style>
+        .image-caption {
+        line-height: normal;
+        font-weight: bold;
+        font-size: 12px;
+        text-align: center;
+      }
+    .dropbtn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 16px;
+        font-size: 16px;
+        border: none;
+        }
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+        }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+        }
+    .dropdown-content li {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+    .dropdown-content a:hover {background-color: #ddd;}
+
+    .dropdown:hover .dropdown-content {display: block;}
+
+    .dropdown:hover .dropbtn {background-color: #3e8e41;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!--Create a new project-->
+        <div id="createButton" onclick="showDiv()">
+                <a class="btn btn-default">
+                    <span> Create New Project </span>
+                </a>
+        </div>
+        
+        <div class="row">
+            <div id="newProject" style="margin:10px">
+			<!--Upload photos-->
+			<div id="upload"class="col-md-4">
+				<form>Upload your file
+					<input type="file" />
+				</form>
+			</div>
+            
+            <!--Filter annoataion-->
+            <div>Mark annotations from below types</div>
+            <div class=" col-md-4 dropdown">
+
+                    <button class="dropbtn" >Vehicle Type</button>
+                    <div class="dropdown-content">
+                      <li id="bus" >Bus</li>
+                      <li id="car" >Car</li>
+                      <li id="auto">Autorikshaw</li>
+                      <li id="bike" >Bike</li>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                        <a class="btn btn-default" onclick="downloadCSV()">
+                                <span> Download CSV </span>
+                        </a>
+                    </div>
+                </div>
+
+                
+		</div>
+		<div class="row">
+			<div class="col-sd-4" >
+				 <img id="myImg1" onload="makeAnnotatation(this)" />
+			</div>
+			<div class="col-sd-4">
+				 <img id="myImg2" onload="makeAnnotatation(this)" class="annotatable" />
+			</div>
+			<div class="col-sd-4">
+				 <img id="myImg3" onload="makeAnnotatation(this)" class="annotatable"/>
+            </div>
+            <div class="col-sd-4" >
+                    <img id="myImg4" onload="makeAnnotatation(this)" />
+               </div>
+               <div class="col-sd-4">
+                    <img id="myImg5" onload="makeAnnotatation(this)" class="annotatable" />
+               </div>
+               <div class="col-sd-4">
+                    <img id="myImg6" onload="makeAnnotatation(this)" class="annotatable"/>
+               </div>
+               <div class="col-sd-4" >
+                    <img id="myImg7" onload="makeAnnotatation(this)" />
+               </div>
+               <div class="col-sd-4">
+                    <img id="myImg8" onload="makeAnnotatation(this)" class="annotatable" />
+               </div>
+               <div class="col-sd-4">
+                    <img id="myImg9" onload="makeAnnotatation(this)" class="annotatable" />
+               </div>
+               <div class="col-sd-4">
+                    <img id="myImg10" onload="makeAnnotatation(this)" class="annotatable" />
+               </div>
+        </div>
+        
+		    
+    </div>
+    
+    <script>
+        $(function(){
+            $("#newProject").hide();
+            $(":file").change(function(){
+                if(this.files && this.files[0]){
+                    var reader = new FileReader();
+                    reader.readAsDataURL(this.files[0])
+                    reader.onload = imageIsLoaded;
+                        
+                }
+            })
+
+        });
+		var count = 1
+        function imageIsLoaded(e){
+
+            /*Make image configurable 
+            var a = document.createElement("img");
+            a.id="#img"+count;
+            a.className = "annotatable"
+            //a.onload = makeAnnotatation(this);
+            a.src = e.target.result
+            alert(a.src)*/
+             $("#myImg"+count).attr('src',e.target.result)
+			count++;
+        }
+        
+        function showDiv(){
+            $("#createButton").click(function(){
+                $("#newProject").show();
+            });
+        }
+        function makeAnnotatation(image){
+            anno.makeAnnotatable(image);
+            anno.addHandler('onAnnotationCreated',function(annotation){
+                var text = annotation.text;
+                var context = annotation.src;
+                var x = annotation.shapes[0].geometry.x;
+                var y = annotation.shapes[0].geometry.y;
+                var width = annotation.shapes[0].geometry.width;
+                var height = annotation.shapes[0].geometry.height;
+                var id = image.id
+                data = {"Vehicle":text,'x':x,'y':y,"Image ID":id}
+                addToCSV(data)
+            })
+        }
+       
+        var csv = ""
+        function addToCSV(data){
+            for(key in data){
+                csv+= key + "," + data[key] +"\n";
+            }
+        }
+
+        function downloadCSV(){
+                var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'Traffic_Details.csv';
+            hiddenElement.click();
+        
+        }
+    </script>
+</div>
+    
+</body>
+</html>
